@@ -44,7 +44,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func configureStatusItem() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        item.button?.title = "◉"
+        if let logoURL = Bundle.module.url(forResource: "JHLogo", withExtension: "svg"),
+           let logo = NSImage(contentsOf: logoURL) {
+            logo.isTemplate = true
+            logo.size = NSSize(width: 18, height: 18)
+            item.button?.image = logo
+            item.button?.imagePosition = .imageOnly
+        } else {
+            item.button?.title = "◉"
+        }
 
         let menu = NSMenu()
         let expressionMenu = NSMenu(title: "Expression")

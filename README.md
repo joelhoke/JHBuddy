@@ -33,4 +33,4 @@ actions.register(BuddyAction("open-reminders")) { context in
 
 ## Art assets
 
-`JHPal-BG.png` is the avatar background and `Eyes-open.png` / `Eyes-closed.png` are composited as the active eye state. Every emotional state adds a 50%-opacity multiply tint over the supplied background, so expressions retain the source art while shifting color. A future Blender/Metal asset pipeline can replace `AvatarView.draw(_:)` while preserving the window, behavior, and action APIs.
+`JHLogo.svg` is used as the menu-bar icon and rendered as a template image, so macOS automatically displays it in the appropriate light or dark appearance. `JHPal-BG.png` is the avatar background and `Eyes-open.png` / `Eyes-closed.png` are composited as the active eye state. Every emotional state adds a 50%-opacity multiply tint over the supplied background, so expressions retain the source art while shifting color. A future Blender/Metal asset pipeline can replace `AvatarView.draw(_:)` while preserving the window, behavior, and action APIs.
