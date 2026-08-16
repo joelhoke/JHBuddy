@@ -22,7 +22,13 @@ final class BuddyWindowController: NSWindowController {
         panel.backgroundColor = .clear
         panel.hasShadow = false
         panel.level = .floating
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+        panel.collectionBehavior = [
+            .canJoinAllSpaces,
+            .canJoinAllApplications,
+            .fullScreenAuxiliary,
+            .stationary,
+            .ignoresCycle
+        ]
         panel.isMovableByWindowBackground = false
         panel.contentView = avatarView
         super.init(window: panel)
