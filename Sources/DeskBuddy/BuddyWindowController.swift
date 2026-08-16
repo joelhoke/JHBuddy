@@ -100,6 +100,7 @@ final class AvatarView: NSView {
     private var holdTimer: Timer?
     private var pointerIsDown = false
     private var holdMenuWasShown = false
+    private var pokeStart: CFTimeInterval?
     private let backgroundImage = AvatarView.bundledImage(named: "JHPal-BG")
     private let openEyesImage = AvatarView.bundledImage(named: "Eyes-open")
     private let closedEyesImage = AvatarView.bundledImage(named: "Eyes-closed")
@@ -195,6 +196,7 @@ final class AvatarView: NSView {
         let location = convert(event.locationInWindow, from: nil)
         let moved = hypot(location.x - mouseDownLocation.x, location.y - mouseDownLocation.y)
         guard moved < 6 else { return }
+        triggerPoke()
         let context = BuddyActionContext(expression: expression, location: location)
         actions.perform(event.clickCount > 1 ? .doubleClick : .click, context: context)
     }
@@ -252,6 +254,12 @@ final class AvatarView: NSView {
         let breathe = sin(now * 1.7) * 2
         let sphere = rect.insetBy(dx: -breathe, dy: -breathe)
 
+        let pokeScale = currentPokeScale(at: now)
+        context.saveGState()
+        context.translateBy(x: bounds.midX, y: bounds.midY)
+        context.scaleBy(x: pokeScale.width, y: pokeScale.height)
+        context.translateBy(x: -bounds.midX, y: -bounds.midY)
+
         context.saveGState()
         context.setShadow(offset: .init(width: 0, height: 8), blur: 18, color: NSColor.black.withAlphaComponent(0.30).cgColor)
         backgroundImage.draw(in: sphere, from: .zero, operation: .sourceOver, fraction: 1, respectFlipped: true, hints: nil)
@@ -267,6 +275,7 @@ final class AvatarView: NSView {
 
         let face = NSRect(x: sphere.minX + sphere.width * 0.17, y: sphere.minY + sphere.height * 0.26, width: sphere.width * 0.66, height: sphere.height * 0.46)
         drawFace(in: face, context: context, time: now)
+        context.restoreGState()
     }
 
     private func drawFace(in rect: NSRect, context: CGContext, time: CFTimeInterval) {
@@ -315,5 +324,30 @@ final class AvatarView: NSView {
             fatalError("Missing required avatar asset: \(name).png")
         }
         return image
+    }
+
+    private func triggerPoke() {
+        pokeStart = CACurrentMediaTime()
+        needsDisplay = true
+    }
+
+    private func currentPokeScale(at time: CFTimeInterval) -> CGSize {
+        guard let pokeStart else { return .init(width: 1, height: 1) }
+        let elapsed = time - pokeStart
+        if elapsed >= 0.52 {
+            self.pokeStart = nil
+            return .init(width: 1, height: 1)
+        }
+        if elapsed < 0.09 {
+            let progress = elapsed / 0.09
+            return .init(width: 1 - 0.14 * progress, height: 1 + 0.13 * progress)
+        }
+        if elapsed < 0.20 {
+            let progress = (elapsed - 0.09) / 0.11
+            return .init(width: 0.86 + 0.26 * progress, height: 1.13 - 0.21 * progress)
+        }
+        let recovery = (elapsed - 0.20) / 0.32
+        let spring = cos(recovery * .pi * 4) * (1 - recovery)
+        return .init(width: 1 + 0.12 * spring, height: 1 - 0.08 * spring)
     }
 }
