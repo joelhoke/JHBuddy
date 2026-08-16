@@ -9,7 +9,7 @@ cd /Users/joelhoke/Documents/DeskBuddy
 swift run
 ```
 
-Click the buddy to make it squash and spring back, while cycling expressions. Double-click for a confirmation sound, and drag it to reposition it. It remains visible across macOS Spaces and makes a short landing hop over a temporary floor hole after you switch Spaces. Hold it for 0.65 seconds to open its options menu, including expression selection and Close Buddy. Use the JH menu-bar icon to show a closed buddy, select an expression, or enable click-through mode. Its last position is remembered.
+Click the buddy to make it squash and spring back, while cycling expressions. Double-click for a confirmation sound, and drag it to reposition it. It remains visible across macOS Spaces. Hold it for 0.65 seconds to open its options menu, including expression selection and Close Buddy. Use the JH menu-bar icon to show a closed buddy, select an expression, or enable click-through mode. Its last position is remembered.
 
 ## Adding future actions
 

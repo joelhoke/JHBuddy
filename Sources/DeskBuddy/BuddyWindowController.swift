@@ -5,6 +5,7 @@ import QuartzCore
 final class BuddyWindowController: NSWindowController {
     private let avatarView: AvatarView
     private var clickThrough = false
+    private var isHiddenByUser = false
 
     var isClickThrough: Bool { clickThrough }
 
@@ -64,7 +65,13 @@ final class BuddyWindowController: NSWindowController {
     }
 
     func showBuddy() {
+        isHiddenByUser = false
         window?.orderFrontRegardless()
+    }
+
+    func hideBuddy() {
+        isHiddenByUser = true
+        window?.orderOut(nil)
     }
 
     @objc private func expressionChanged(_ notification: Notification) {
@@ -73,7 +80,8 @@ final class BuddyWindowController: NSWindowController {
     }
 
     @objc private func activeSpaceDidChange(_ notification: Notification) {
-        avatarView.triggerSpaceHop()
+        guard !isHiddenByUser else { return }
+        window?.orderFrontRegardless()
     }
 
     func persistFrame() {
@@ -112,7 +120,6 @@ final class AvatarView: NSView {
     private var pointerIsDown = false
     private var holdMenuWasShown = false
     private var pokeStart: CFTimeInterval?
-    private var spaceHopStart: CFTimeInterval?
     private let backgroundImage = AvatarView.bundledImage(named: "JHPal-BG")
     private let openEyesImage = AvatarView.bundledImage(named: "Eyes-open")
     private let closedEyesImage = AvatarView.bundledImage(named: "Eyes-closed")
@@ -226,7 +233,7 @@ final class AvatarView: NSView {
     }
 
     @objc private func closeBuddy(_ sender: Any?) {
-        window?.orderOut(nil)
+        (window?.windowController as? BuddyWindowController)?.hideBuddy()
     }
 
     @objc private func quitBuddy(_ sender: Any?) {
@@ -265,15 +272,12 @@ final class AvatarView: NSView {
         let emotionalColor = previousPalette.base.blended(withFraction: transition, of: palette.base) ?? palette.base
         let breathe = sin(now * 1.7) * 2
         let sphere = rect.insetBy(dx: -breathe, dy: -breathe)
-        let spaceHop = currentSpaceHop(at: now)
-        drawSpaceHole(in: rect, intensity: spaceHop.holeIntensity)
 
         let pokeScale = currentPokeScale(at: now)
         context.saveGState()
         context.translateBy(x: bounds.midX, y: bounds.midY)
         context.scaleBy(x: pokeScale.width, y: pokeScale.height)
         context.translateBy(x: -bounds.midX, y: -bounds.midY)
-        context.translateBy(x: 0, y: spaceHop.verticalOffset)
 
         context.saveGState()
         context.setShadow(offset: .init(width: 0, height: 8), blur: 18, color: NSColor.black.withAlphaComponent(0.30).cgColor)
@@ -346,11 +350,6 @@ final class AvatarView: NSView {
         needsDisplay = true
     }
 
-    func triggerSpaceHop() {
-        spaceHopStart = CACurrentMediaTime()
-        needsDisplay = true
-    }
-
     private func currentPokeScale(at time: CFTimeInterval) -> CGSize {
         guard let pokeStart else { return .init(width: 1, height: 1) }
         let elapsed = time - pokeStart
@@ -371,31 +370,4 @@ final class AvatarView: NSView {
         return .init(width: 1 + 0.12 * spring, height: 1 - 0.08 * spring)
     }
 
-    private func currentSpaceHop(at time: CFTimeInterval) -> (verticalOffset: CGFloat, holeIntensity: CGFloat) {
-        guard let spaceHopStart else { return (0, 0) }
-        let elapsed = time - spaceHopStart
-        if elapsed >= 0.56 {
-            self.spaceHopStart = nil
-            return (0, 0)
-        }
-        let progress = max(0, min(1, elapsed / 0.56))
-        let verticalOffset = -34 * sin(progress * .pi)
-        let holeIntensity = sin(progress * .pi)
-        return (verticalOffset, holeIntensity)
-    }
-
-    private func drawSpaceHole(in rect: NSRect, intensity: CGFloat) {
-        guard intensity > 0 else { return }
-        let holeWidth = rect.width * (0.24 + 0.16 * intensity)
-        let holeHeight = 13 * intensity
-        let hole = NSRect(
-            x: rect.midX - holeWidth / 2,
-            y: rect.maxY - 29 - holeHeight / 2,
-            width: holeWidth,
-            height: holeHeight
-        )
-        let path = NSBezierPath(ovalIn: hole)
-        NSColor.black.withAlphaComponent(0.5 * intensity).setFill()
-        path.fill()
-    }
 }
