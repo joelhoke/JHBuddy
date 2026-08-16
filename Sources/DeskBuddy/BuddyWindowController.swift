@@ -73,7 +73,6 @@ final class BuddyWindowController: NSWindowController {
     }
 
     @objc private func activeSpaceDidChange(_ notification: Notification) {
-        showBuddy()
         avatarView.triggerSpaceHop()
     }
 
